@@ -1,14 +1,25 @@
-# 1. Start with a lightweight Linux machine that has Java 17 installed
-FROM eclipse-temurin:17-jdk-alpine
-
-# 2. Create a directory inside the container called /app
+# === STAGE 1: Build the JAR ===
+# We use a heavy Maven image just to compile the code
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# 3. Copy your newly built JAR file from your computer into the container
-COPY target/*.jar finance-tracker-0.0.1-SNAPSHOT.jar
+# Copy the pom.xml and source code
+COPY pom.xml .
+COPY src ./src
 
-# 4. Open port 8080 so the outside world can talk to it
+# Tell Maven to package the application (skipping tests to speed up deployment)
+RUN mvn clean package -DskipTests
+
+# === STAGE 2: Run the App ===
+# We throw away the heavy Maven tools and just keep a tiny Java runtime
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+# Copy the compiled JAR from Stage 1 and rename it to app.jar
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port 8080
 EXPOSE 8080
 
-# 5. The command to start your Spring Boot app
-ENTRYPOINT ["java", "-jar", "finance-tracker-0.0.1-SNAPSHOT.jar"]
+# Run the JAR
+ENTRYPOINT ["java", "-jar", "app.jar"]
