@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig {
     
-	@Value("${frontend.url:http://localhost:4200}}")
+	@Value("${frontend.url:http://localhost:4200}")
 	private String frontendurl;
 	
 	@Bean
@@ -20,7 +20,7 @@ public class WebConfig {
 		   public void addCorsMappings(CorsRegistry  registry) {
 			    registry.addMapping("/**")
 			            .allowedOriginPatterns(frontendurl)
-			            .allowedMethods("GET","POST" ,"PUT" , "DELETE")
+			            .allowedMethods("GET","POST" ,"PUT" , "DELETE", "OPTIONS")
 			            .allowedHeaders("*")
 			            .allowCredentials(true);
 		   }
